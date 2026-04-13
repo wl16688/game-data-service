@@ -4,6 +4,19 @@ server:
 spring:
   application:
     name: game-data-service
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/game_db?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC&createDatabaseIfNotExist=true}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
   data:
     redis:
       host: ${REDIS_HOST:localhost}
