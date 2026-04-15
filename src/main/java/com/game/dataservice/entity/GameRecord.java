@@ -28,8 +28,14 @@ public class GameRecord {
     @Column(name = "game_id", nullable = false, length = 64)
     private String gameId;
 
-    @Column(name = "score", nullable = false)
-    private double score;
+    @Column(name = "level_id", nullable = false, length = 64)
+    private String levelId;
+
+    @Column(name = "province", length = 64)
+    private String province;
+
+    @Column(name = "city", length = 64)
+    private String city;
 
     @Column(name = "sync_timestamp", nullable = false)
     private long timestamp;

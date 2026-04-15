@@ -25,13 +25,20 @@ public class DataSyncService {
             log.info("Received game data sync event: {}", gameData);
             
             // 1. Process the sync event, e.g., update leaderboard in Redis
-            leaderboardService.updateScore(gameData.getGameId(), gameData.getUserId(), gameData.getScore());
+            leaderboardService.recordLevelClear(
+                    gameData.getGameId(), 
+                    gameData.getUserId(), 
+                    gameData.getProvince(), 
+                    gameData.getCity()
+            );
             
             // 2. Persist the game data record into MySQL
             GameRecord record = GameRecord.builder()
                     .gameId(gameData.getGameId())
                     .userId(gameData.getUserId())
-                    .score(gameData.getScore())
+                    .levelId(gameData.getLevelId())
+                    .province(gameData.getProvince())
+                    .city(gameData.getCity())
                     .timestamp(gameData.getTimestamp())
                     .build();
             gameRecordRepository.save(record);

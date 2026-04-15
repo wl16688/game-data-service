@@ -14,6 +14,8 @@ import java.io.Serializable;
 public class GameData implements Serializable {
     private String userId;
     private String gameId;
-    private double score;
+    private String levelId; // 记录通关的关卡ID
+    private String province; // 用户所在省份
+    private String city;     // 用户所在城市
     private long timestamp;
 }

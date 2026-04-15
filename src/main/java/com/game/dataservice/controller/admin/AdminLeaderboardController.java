@@ -22,7 +22,7 @@ public class AdminLeaderboardController {
     private final DataSyncService dataSyncService;
     private final ObjectMapper objectMapper;
 
-    @Operation(summary = "Manual Sync Data", description = "Manually push game data to the sync service (simulates Kafka message)")
+    @Operation(summary = "Manual Sync Data", description = "Manually push a level clear event (simulates Kafka message)")
     @PostMapping("/sync")
     public ResponseEntity<String> manualSync(@RequestBody GameData gameData) {
         try {
@@ -34,13 +34,13 @@ public class AdminLeaderboardController {
         }
     }
 
-    @Operation(summary = "Update User Score", description = "Admin endpoint to directly update a user's score")
-    @PutMapping("/{gameId}/user/{userId}")
-    public ResponseEntity<String> updateUserScore(
-            @PathVariable String gameId,
-            @PathVariable String userId,
+    @Operation(summary = "Force Update Score", description = "Force set absolute score for a specific leaderboard key (e.g. game:lb:global:1)")
+    @PutMapping("/force-score")
+    public ResponseEntity<String> forceUpdateScore(
+            @RequestParam String key,
+            @RequestParam String userId,
             @RequestParam double score) {
-        leaderboardService.updateScore(gameId, userId, score);
-        return ResponseEntity.ok("Score updated successfully");
+        leaderboardService.updateAbsoluteScore(key, userId, score);
+        return ResponseEntity.ok("Score forced updated successfully");
     }
 }
