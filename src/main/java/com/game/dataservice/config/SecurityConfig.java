@@ -24,7 +24,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints for auth and Swagger docs
-                        .requestMatchers("/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/app/user/wx-login", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         // Admin endpoints require ADMIN role
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         // App endpoints require user authentication (or USER role)

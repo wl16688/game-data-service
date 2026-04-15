@@ -41,6 +41,11 @@ spring:
   #     value-serializer: org.apache.kafka.common.serialization.StringSerializer
   #     acks: all
 
+wechat:
+  miniapp:
+    appid: ${WECHAT_APPID:your_appid}
+    secret: ${WECHAT_SECRET:your_secret}
+
 game:
   sync:
     topic: game-data-sync
