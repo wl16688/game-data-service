@@ -43,7 +43,7 @@ public class AppUserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @Operation(summary = "Update User Profile", description = "Update nickname, avatar, provinceId, cityId, districtId")
+    @Operation(summary = "Update User Profile", description = "Update nickname, avatar, countryId, provinceId, cityId, districtId")
     @SecurityRequirement(name = "bearerAuth")
     @PutMapping("/profile")
     public ResponseEntity<User> updateProfile(@RequestBody UpdateProfileRequest request) {
@@ -54,6 +54,7 @@ public class AppUserController {
                 Long.parseLong(userIdStr), 
                 request.getNickname(), 
                 request.getAvatarUrl(),
+                request.getCountryId(),
                 request.getProvinceId(),
                 request.getCityId(),
                 request.getDistrictId()
@@ -70,6 +71,7 @@ public class AppUserController {
     public static class UpdateProfileRequest {
         private String nickname;
         private String avatarUrl;
+        private Integer countryId;
         private Integer provinceId;
         private Integer cityId;
         private Integer districtId;

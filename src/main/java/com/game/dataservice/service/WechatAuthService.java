@@ -91,12 +91,13 @@ public class WechatAuthService {
     /**
      * 更新用户信息
      */
-    public User updateUserInfo(Long userId, String nickname, String avatarUrl, Integer provinceId, Integer cityId, Integer districtId) {
+    public User updateUserInfo(Long userId, String nickname, String avatarUrl, Integer countryId, Integer provinceId, Integer cityId, Integer districtId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
         if (nickname != null) user.setNickname(nickname);
         if (avatarUrl != null) user.setAvatarUrl(avatarUrl);
+        if (countryId != null) user.setCountryId(countryId);
         if (provinceId != null) user.setProvinceId(provinceId);
         if (cityId != null) user.setCityId(cityId);
         if (districtId != null) user.setDistrictId(districtId);

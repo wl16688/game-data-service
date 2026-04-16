@@ -34,6 +34,9 @@ public class User {
     @Column(name = "avatar_url", length = 512)
     private String avatarUrl;
 
+    @Column(name = "country_id")
+    private Integer countryId;
+
     @Column(name = "province_id")
     private Integer provinceId;
 
