@@ -1,8 +1,11 @@
 package com.game.dataservice.controller.app;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.game.dataservice.common.ApiResponse;
+import com.game.dataservice.model.GameData;
 import com.game.dataservice.model.LeaderboardEntry;
 import com.game.dataservice.model.UserStats;
+import com.game.dataservice.service.DataSyncService;
 import com.game.dataservice.service.LeaderboardCacheJob;
 import com.game.dataservice.service.LeaderboardService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,12 +22,38 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/app/leaderboard")
 @RequiredArgsConstructor
-@Tag(name = "小程序排行榜", description = "小程序端排行榜接口（需要 USER/ADMIN JWT）")
+@Tag(name = "小程序排行榜与通关上报", description = "小程序端排行榜接口及用户通关记录上报（需要 USER/ADMIN JWT）")
 @SecurityRequirement(name = "bearerAuth")
 public class AppLeaderboardController {
 
     private final LeaderboardService leaderboardService;
     private final LeaderboardCacheJob leaderboardCacheJob;
+    private final DataSyncService dataSyncService;
+    private final ObjectMapper objectMapper;
+
+    @Operation(summary = "提交关卡通关数据", description = "用户在客户端通关后，调用此接口上报通关记录")
+    @PostMapping("/submit-clear")
+    public ResponseEntity<ApiResponse<String>> submitLevelClear(@RequestBody GameData gameData) {
+        try {
+            // 从当前登录上下文中获取用户 ID
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String userId = (String) auth.getPrincipal();
+            gameData.setUserId(userId);
+            
+            // 如果没有传时间戳，则使用服务器当前时间
+            if (gameData.getTimestamp() == 0) {
+                gameData.setTimestamp(System.currentTimeMillis());
+            }
+
+            // 直接复用原有的 dataSyncService，将对象转 JSON 发送给内部处理（如果有 MQ 也是发送到 MQ）
+            String message = objectMapper.writeValueAsString(gameData);
+            dataSyncService.consumeGameData(message);
+            
+            return ResponseEntity.ok(ApiResponse.success("通关数据提交成功", null));
+        } catch (Exception e) {
+            return ResponseEntity.ok(ApiResponse.error(500, "通关数据提交失败：" + e.getMessage()));
+        }
+    }
 
     @Operation(summary = "获取全服排行榜（缓存）", description = "获取全服前 N 名（day/week/month/all），每 5 分钟更新一次缓存")
     @GetMapping("/{gameId}/global")
