@@ -131,7 +131,8 @@ public class LeaderboardService {
             case "day" -> gameId + ":day:" + now.format(DAY_FORMATTER);
             case "week" -> gameId + ":week:" + now.getYear() + "W" + now.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
             case "month" -> gameId + ":month:" + now.format(MONTH_FORMATTER);
-            default -> gameId + ":all";
+            case "all" -> gameId;
+            default -> gameId;
         };
     }
 
