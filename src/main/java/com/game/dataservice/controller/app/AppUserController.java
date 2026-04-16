@@ -43,7 +43,7 @@ public class AppUserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @Operation(summary = "Update User Profile", description = "Update nickname and avatar")
+    @Operation(summary = "Update User Profile", description = "Update nickname, avatar, province, and city")
     @SecurityRequirement(name = "bearerAuth")
     @PutMapping("/profile")
     public ResponseEntity<User> updateProfile(@RequestBody UpdateProfileRequest request) {
@@ -53,7 +53,9 @@ public class AppUserController {
         User updatedUser = wechatAuthService.updateUserInfo(
                 Long.parseLong(userIdStr), 
                 request.getNickname(), 
-                request.getAvatarUrl()
+                request.getAvatarUrl(),
+                request.getProvince(),
+                request.getCity()
         );
         return ResponseEntity.ok(updatedUser);
     }
@@ -67,5 +69,7 @@ public class AppUserController {
     public static class UpdateProfileRequest {
         private String nickname;
         private String avatarUrl;
+        private String province;
+        private String city;
     }
 }

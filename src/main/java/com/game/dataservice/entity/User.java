@@ -34,6 +34,12 @@ public class User {
     @Column(name = "avatar_url", length = 512)
     private String avatarUrl;
 
+    @Column(name = "province", length = 64)
+    private String province;
+
+    @Column(name = "city", length = 64)
+    private String city;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     

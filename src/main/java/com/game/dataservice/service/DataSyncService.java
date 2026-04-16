@@ -37,8 +37,6 @@ public class DataSyncService {
                     .gameId(gameData.getGameId())
                     .userId(gameData.getUserId())
                     .levelId(gameData.getLevelId())
-                    .province(gameData.getProvince())
-                    .city(gameData.getCity())
                     .timestamp(gameData.getTimestamp())
                     .build();
             gameRecordRepository.save(record);
