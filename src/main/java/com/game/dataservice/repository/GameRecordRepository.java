@@ -32,12 +32,12 @@ public interface GameRecordRepository extends JpaRepository<GameRecord, Long> {
      */
     @Query("SELECT r.userId as userId, COUNT(r) as score " +
            "FROM GameRecord r JOIN User u ON CAST(r.userId AS long) = u.id " +
-           "WHERE r.gameId = :gameId AND u.province = :province " +
+           "WHERE r.gameId = :gameId AND u.provinceId = :provinceId " +
            "AND r.createdAt >= :startTime AND r.createdAt < :endTime " +
            "GROUP BY r.userId")
     List<Map<String, Object>> countUserScoresByProvinceAndPeriod(
             @Param("gameId") String gameId,
-            @Param("province") String province,
+            @Param("provinceId") Integer provinceId,
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime);
 
@@ -46,23 +46,23 @@ public interface GameRecordRepository extends JpaRepository<GameRecord, Long> {
      */
     @Query("SELECT r.userId as userId, COUNT(r) as score " +
            "FROM GameRecord r JOIN User u ON CAST(r.userId AS long) = u.id " +
-           "WHERE r.gameId = :gameId AND u.city = :city " +
+           "WHERE r.gameId = :gameId AND u.cityId = :cityId " +
            "AND r.createdAt >= :startTime AND r.createdAt < :endTime " +
            "GROUP BY r.userId")
     List<Map<String, Object>> countUserScoresByCityAndPeriod(
             @Param("gameId") String gameId,
-            @Param("city") String city,
+            @Param("cityId") Integer cityId,
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime);
 
     /**
      * 容灾恢复：统计指定时间段内，全国各省份的总通关数
      */
-    @Query("SELECT u.province as regionName, COUNT(r) as score " +
+    @Query("SELECT u.provinceId as regionId, COUNT(r) as score " +
            "FROM GameRecord r JOIN User u ON CAST(r.userId AS long) = u.id " +
-           "WHERE r.gameId = :gameId AND u.province IS NOT NULL " +
+           "WHERE r.gameId = :gameId AND u.provinceId IS NOT NULL " +
            "AND r.createdAt >= :startTime AND r.createdAt < :endTime " +
-           "GROUP BY u.province")
+           "GROUP BY u.provinceId")
     List<Map<String, Object>> countProvinceScoresByPeriod(
             @Param("gameId") String gameId,
             @Param("startTime") LocalDateTime startTime,
@@ -71,11 +71,11 @@ public interface GameRecordRepository extends JpaRepository<GameRecord, Long> {
     /**
      * 容灾恢复：统计指定时间段内，全国各城市的总通关数
      */
-    @Query("SELECT u.city as regionName, COUNT(r) as score " +
+    @Query("SELECT u.cityId as regionId, COUNT(r) as score " +
            "FROM GameRecord r JOIN User u ON CAST(r.userId AS long) = u.id " +
-           "WHERE r.gameId = :gameId AND u.city IS NOT NULL " +
+           "WHERE r.gameId = :gameId AND u.cityId IS NOT NULL " +
            "AND r.createdAt >= :startTime AND r.createdAt < :endTime " +
-           "GROUP BY u.city")
+           "GROUP BY u.cityId")
     List<Map<String, Object>> countCityScoresByPeriod(
             @Param("gameId") String gameId,
             @Param("startTime") LocalDateTime startTime,

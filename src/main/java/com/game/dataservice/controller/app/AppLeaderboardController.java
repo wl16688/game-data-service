@@ -45,15 +45,15 @@ public class AppLeaderboardController {
     }
 
     @Operation(summary = "Get Province Top Players (Cached)", description = "Fetch top N players in a province (day, week, month, all). Updated every 5 mins.")
-    @GetMapping("/{gameId}/province/{province}")
+    @GetMapping("/{gameId}/province/{provinceId}")
     public ResponseEntity<?> getProvinceTop(
             @PathVariable String gameId,
-            @PathVariable String province,
+            @PathVariable Integer provinceId,
             @RequestParam(defaultValue = "day") String period,
             @RequestParam(defaultValue = "100") int limit) {
             
         // 尝试从5分钟缓存读取
-        String cachedJson = leaderboardCacheJob.getCachedProvinceLeaderboard(gameId, period, province);
+        String cachedJson = leaderboardCacheJob.getCachedProvinceLeaderboard(gameId, period, String.valueOf(provinceId));
         if (cachedJson != null) {
             return ResponseEntity.ok()
                     .header("Content-Type", "application/json")
@@ -61,18 +61,18 @@ public class AppLeaderboardController {
         }
         
         // 兜底直接查Redis ZSet实时数据
-        return ResponseEntity.ok(leaderboardService.getProvinceLeaderboard(gameId, period, province, limit));
+        return ResponseEntity.ok(leaderboardService.getProvinceLeaderboard(gameId, period, provinceId, limit));
     }
 
     @Operation(summary = "Get City Top Players (Real-time)", description = "Fetch top N players in a specific city")
-    @GetMapping("/{gameId}/city/{city}")
+    @GetMapping("/{gameId}/city/{cityId}")
     public ResponseEntity<List<LeaderboardEntry>> getCityTop(
             @PathVariable String gameId,
-            @PathVariable String city,
+            @PathVariable Integer cityId,
             @RequestParam(defaultValue = "day") String period,
             @RequestParam(defaultValue = "100") int limit) {
         // City 太多不适合全部预热，采用直接查实时ZSet的方式
-        return ResponseEntity.ok(leaderboardService.getCityLeaderboard(gameId, period, city, limit));
+        return ResponseEntity.ok(leaderboardService.getCityLeaderboard(gameId, period, cityId, limit));
     }
 
     @Operation(summary = "Get Provinces Ranking (Cached)", description = "Fetch ranking of all provinces by total level clears")
@@ -113,13 +113,13 @@ public class AppLeaderboardController {
     @GetMapping("/{gameId}/me/stats")
     public ResponseEntity<UserStats> getMyStats(
             @PathVariable String gameId,
-            @RequestParam(required = false) String province,
-            @RequestParam(required = false) String city) {
+            @RequestParam(required = false) Integer provinceId,
+            @RequestParam(required = false) Integer cityId) {
             
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String userId = (String) auth.getPrincipal();
         
-        UserStats stats = leaderboardService.getUserStats(gameId, userId, province, city);
+        UserStats stats = leaderboardService.getUserStats(gameId, userId, provinceId, cityId);
         return ResponseEntity.ok(stats);
     }
 }

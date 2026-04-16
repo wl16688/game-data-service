@@ -87,20 +87,20 @@ public class DisasterRecoveryService {
         writeToZSet(regionCityKey, cityScores, "regionName", expireDays);
 
         // 4. 恢复省份内部玩家榜（找出这段时间内有活跃的省份）
-        Set<String> activeProvinces = new HashSet<>();
-        provScores.forEach(m -> activeProvinces.add((String) m.get("regionName")));
-        for (String prov : activeProvinces) {
-            List<Map<String, Object>> userProvScores = gameRecordRepository.countUserScoresByProvinceAndPeriod(gameId, prov, start, end);
-            String provUserKey = "game:lb:prov:" + periodKey + ":" + prov;
+        Set<Integer> activeProvinces = new HashSet<>();
+        provScores.forEach(m -> activeProvinces.add(((Number) m.get("regionId")).intValue()));
+        for (Integer provId : activeProvinces) {
+            List<Map<String, Object>> userProvScores = gameRecordRepository.countUserScoresByProvinceAndPeriod(gameId, provId, start, end);
+            String provUserKey = "game:lb:prov:" + periodKey + ":" + provId;
             writeToZSet(provUserKey, userProvScores, "userId", expireDays);
         }
 
         // 5. 恢复城市内部玩家榜（找出这段时间内有活跃的城市）
-        Set<String> activeCities = new HashSet<>();
-        cityScores.forEach(m -> activeCities.add((String) m.get("regionName")));
-        for (String city : activeCities) {
-            List<Map<String, Object>> userCityScores = gameRecordRepository.countUserScoresByCityAndPeriod(gameId, city, start, end);
-            String cityUserKey = "game:lb:city:" + periodKey + ":" + city;
+        Set<Integer> activeCities = new HashSet<>();
+        cityScores.forEach(m -> activeCities.add(((Number) m.get("regionId")).intValue()));
+        for (Integer cityId : activeCities) {
+            List<Map<String, Object>> userCityScores = gameRecordRepository.countUserScoresByCityAndPeriod(gameId, cityId, start, end);
+            String cityUserKey = "game:lb:city:" + periodKey + ":" + cityId;
             writeToZSet(cityUserKey, userCityScores, "userId", expireDays);
         }
     }
@@ -115,7 +115,7 @@ public class DisasterRecoveryService {
 
         Set<ZSetOperations.TypedTuple<Object>> tuples = new HashSet<>();
         for (Map<String, Object> row : data) {
-            String member = (String) row.get(memberField);
+            String member = String.valueOf(row.get(memberField));
             Double score = Double.valueOf(row.get("score").toString());
             tuples.add(ZSetOperations.TypedTuple.of(member, score));
         }

@@ -28,8 +28,8 @@ public class DataSyncService {
             leaderboardService.recordLevelClear(
                     gameData.getGameId(), 
                     gameData.getUserId(), 
-                    gameData.getProvince(), 
-                    gameData.getCity()
+                    gameData.getProvinceId(), 
+                    gameData.getCityId()
             );
             
             // 2. Persist the game data record into MySQL

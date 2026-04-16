@@ -24,7 +24,7 @@ public class LeaderboardCacheJob {
     // 为了演示，这里固定了需要计算缓存的 gameId 和地区。实际业务中可以从 DB/配置中动态获取。
     private final List<String> activeGames = Arrays.asList("sheep_game");
     private final List<String> periods = Arrays.asList("day", "week", "month", "all");
-    private final List<String> topProvinces = Arrays.asList("Guangdong", "Beijing", "Shanghai"); // 热门省份预计算
+    private final List<Integer> topProvinceIds = Arrays.asList(440000, 110000, 310000); // 广东, 北京, 上海
     private final int TOP_N = 100;
 
     private static final String CACHE_PREFIX = "game:lb:cache:";
@@ -47,8 +47,8 @@ public class LeaderboardCacheJob {
                     cacheRegionRanking(gameId, period);
                     
                     // 3. 缓存具体热门省份内的玩家排行
-                    for (String province : topProvinces) {
-                        cacheProvinceLeaderboard(gameId, period, province);
+                    for (Integer provinceId : topProvinceIds) {
+                        cacheProvinceLeaderboard(gameId, period, provinceId);
                     }
                 }
             }
@@ -66,10 +66,10 @@ public class LeaderboardCacheJob {
         log.debug("Cached global leaderboard for game {}, period {}", gameId, period);
     }
 
-    private void cacheProvinceLeaderboard(String gameId, String period, String province) throws Exception {
-        List<LeaderboardEntry> list = leaderboardService.getProvinceLeaderboard(gameId, period, province, TOP_N);
+    private void cacheProvinceLeaderboard(String gameId, String period, Integer provinceId) throws Exception {
+        List<LeaderboardEntry> list = leaderboardService.getProvinceLeaderboard(gameId, period, provinceId, TOP_N);
         String json = objectMapper.writeValueAsString(list);
-        String cacheKey = CACHE_PREFIX + "prov:" + gameId + ":" + period + ":" + province;
+        String cacheKey = CACHE_PREFIX + "prov:" + gameId + ":" + period + ":" + provinceId;
         redisTemplate.opsForValue().set(cacheKey, json, Duration.ofMinutes(6));
     }
 

@@ -23,6 +23,7 @@ import java.util.Set;
 public class LeaderboardService {
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final RegionCacheService regionCacheService;
 
     // Keys base definition
     private static final String KEY_GLOBAL = "game:lb:global:";
@@ -39,56 +40,56 @@ public class LeaderboardService {
     /**
      * 记录玩家通关事件 (按周期更新)
      */
-    public void recordLevelClear(String gameId, String userId, String province, String city) {
+    public void recordLevelClear(String gameId, String userId, Integer provinceId, Integer cityId) {
         LocalDate now = LocalDate.now();
         String dayStr = now.format(DAY_FORMATTER);
         String weekStr = now.getYear() + "W" + now.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
         String monthStr = now.format(MONTH_FORMATTER);
 
         // 1. 更新总榜单
-        incrementScores(gameId, userId, province, city, "all", 0);
+        incrementScores(gameId, userId, provinceId, cityId, "all", 0);
         
         // 2. 更新日榜单 (保留3天)
-        incrementScores(gameId + ":day:" + dayStr, userId, province, city, "day", 3);
+        incrementScores(gameId + ":day:" + dayStr, userId, provinceId, cityId, "day", 3);
         
         // 3. 更新周榜单 (保留14天)
-        incrementScores(gameId + ":week:" + weekStr, userId, province, city, "week", 14);
+        incrementScores(gameId + ":week:" + weekStr, userId, provinceId, cityId, "week", 14);
         
         // 4. 更新月榜单 (保留60天)
-        incrementScores(gameId + ":month:" + monthStr, userId, province, city, "month", 60);
+        incrementScores(gameId + ":month:" + monthStr, userId, provinceId, cityId, "month", 60);
 
         // 5. 更新独立的每日通关统计Hash (用于用户个人中心展示)
         String dailyKey = KEY_DAILY + gameId + ":" + dayStr;
         redisTemplate.opsForHash().increment(dailyKey, userId, 1);
         redisTemplate.expire(dailyKey, Duration.ofDays(2));
 
-        log.debug("Recorded level clear for user {} in game {}, prov: {}, city: {}", userId, gameId, province, city);
+        log.debug("Recorded level clear for user {} in game {}, provId: {}, cityId: {}", userId, gameId, provinceId, cityId);
     }
 
-    private void incrementScores(String gamePeriodKey, String userId, String province, String city, String type, int expireDays) {
+    private void incrementScores(String gamePeriodKey, String userId, Integer provinceId, Integer cityId, String type, int expireDays) {
         String globalKey = KEY_GLOBAL + gamePeriodKey;
         redisTemplate.opsForZSet().incrementScore(globalKey, userId, 1);
         if (expireDays > 0) redisTemplate.expire(globalKey, Duration.ofDays(expireDays));
 
-        if (province != null && !province.isEmpty()) {
-            String provKey = KEY_PROV + gamePeriodKey + ":" + province;
+        if (provinceId != null) {
+            String provKey = KEY_PROV + gamePeriodKey + ":" + provinceId;
             redisTemplate.opsForZSet().incrementScore(provKey, userId, 1);
             if (expireDays > 0) redisTemplate.expire(provKey, Duration.ofDays(expireDays));
             
             // 同时更新“省份通关总数排行榜”
             String regionProvKey = KEY_REGION_PROV + gamePeriodKey;
-            redisTemplate.opsForZSet().incrementScore(regionProvKey, province, 1);
+            redisTemplate.opsForZSet().incrementScore(regionProvKey, String.valueOf(provinceId), 1);
             if (expireDays > 0) redisTemplate.expire(regionProvKey, Duration.ofDays(expireDays));
         }
 
-        if (city != null && !city.isEmpty()) {
-            String cityKey = KEY_CITY + gamePeriodKey + ":" + city;
+        if (cityId != null) {
+            String cityKey = KEY_CITY + gamePeriodKey + ":" + cityId;
             redisTemplate.opsForZSet().incrementScore(cityKey, userId, 1);
             if (expireDays > 0) redisTemplate.expire(cityKey, Duration.ofDays(expireDays));
             
             // 同时更新“城市通关总数排行榜”
             String regionCityKey = KEY_REGION_CITY + gamePeriodKey;
-            redisTemplate.opsForZSet().incrementScore(regionCityKey, city, 1);
+            redisTemplate.opsForZSet().incrementScore(regionCityKey, String.valueOf(cityId), 1);
             if (expireDays > 0) redisTemplate.expire(regionCityKey, Duration.ofDays(expireDays));
         }
     }
@@ -146,15 +147,15 @@ public class LeaderboardService {
     /**
      * 获取省份榜单
      */
-    public List<LeaderboardEntry> getProvinceLeaderboard(String gameId, String period, String province, int topN) {
-        return getLeaderboard(KEY_PROV + getPeriodKey(gameId, period) + ":" + province, topN);
+    public List<LeaderboardEntry> getProvinceLeaderboard(String gameId, String period, Integer provinceId, int topN) {
+        return getLeaderboard(KEY_PROV + getPeriodKey(gameId, period) + ":" + provinceId, topN);
     }
 
     /**
      * 获取城市榜单
      */
-    public List<LeaderboardEntry> getCityLeaderboard(String gameId, String period, String city, int topN) {
-        return getLeaderboard(KEY_CITY + getPeriodKey(gameId, period) + ":" + city, topN);
+    public List<LeaderboardEntry> getCityLeaderboard(String gameId, String period, Integer cityId, int topN) {
+        return getLeaderboard(KEY_CITY + getPeriodKey(gameId, period) + ":" + cityId, topN);
     }
 
     /**
@@ -170,8 +171,10 @@ public class LeaderboardService {
         long rank = 1;
         List<RegionLeaderboardEntry> leaderboard = new java.util.ArrayList<>();
         for (ZSetOperations.TypedTuple<Object> tuple : topScores) {
+            Integer regionId = Integer.valueOf(String.valueOf(tuple.getValue()));
             leaderboard.add(RegionLeaderboardEntry.builder()
-                    .regionName(String.valueOf(tuple.getValue()))
+                    .regionId(regionId)
+                    .regionName(regionCacheService.getName(regionId))
                     .totalLevels(tuple.getScore() != null ? tuple.getScore() : 0)
                     .rank(rank++)
                     .build());
@@ -196,20 +199,20 @@ public class LeaderboardService {
     /**
      * 获取特定用户的多维度统计数据
      */
-    public UserStats getUserStats(String gameId, String userId, String province, String city) {
+    public UserStats getUserStats(String gameId, String userId, Integer provinceId, Integer cityId) {
         String allPeriodKey = getPeriodKey(gameId, "all");
         
         Double globalScore = redisTemplate.opsForZSet().score(KEY_GLOBAL + allPeriodKey, userId);
         Long globalRank = redisTemplate.opsForZSet().reverseRank(KEY_GLOBAL + allPeriodKey, userId);
 
         Long provRank = null;
-        if (province != null && !province.isEmpty()) {
-            provRank = redisTemplate.opsForZSet().reverseRank(KEY_PROV + allPeriodKey + ":" + province, userId);
+        if (provinceId != null) {
+            provRank = redisTemplate.opsForZSet().reverseRank(KEY_PROV + allPeriodKey + ":" + provinceId, userId);
         }
 
         Long cityRank = null;
-        if (city != null && !city.isEmpty()) {
-            cityRank = redisTemplate.opsForZSet().reverseRank(KEY_CITY + allPeriodKey + ":" + city, userId);
+        if (cityId != null) {
+            cityRank = redisTemplate.opsForZSet().reverseRank(KEY_CITY + allPeriodKey + ":" + cityId, userId);
         }
 
         String today = LocalDate.now().format(DAY_FORMATTER);
