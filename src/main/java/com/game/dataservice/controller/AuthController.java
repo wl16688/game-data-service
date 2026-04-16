@@ -1,5 +1,6 @@
 package com.game.dataservice.controller;
 
+import com.game.dataservice.common.ApiResponse;
 import com.game.dataservice.security.JwtUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,15 +20,15 @@ public class AuthController {
 
     @Operation(summary = "小程序用户登录", description = "返回带 USER 角色的 JWT Token")
     @PostMapping("/login/user")
-    public ResponseEntity<?> loginUser(@RequestParam String username) {
+    public ResponseEntity<ApiResponse<Map<String, String>>> loginUser(@RequestParam String username) {
         String token = jwtUtils.generateToken(username, "USER");
-        return ResponseEntity.ok(Map.of("token", token, "role", "USER"));
+        return ResponseEntity.ok(ApiResponse.success(Map.of("token", token, "role", "USER")));
     }
 
     @Operation(summary = "管理员登录", description = "返回带 ADMIN 角色的 JWT Token")
     @PostMapping("/login/admin")
-    public ResponseEntity<?> loginAdmin(@RequestParam String username) {
+    public ResponseEntity<ApiResponse<Map<String, String>>> loginAdmin(@RequestParam String username) {
         String token = jwtUtils.generateToken(username, "ADMIN");
-        return ResponseEntity.ok(Map.of("token", token, "role", "ADMIN"));
+        return ResponseEntity.ok(ApiResponse.success(Map.of("token", token, "role", "ADMIN")));
     }
 }

@@ -1,5 +1,6 @@
 package com.game.dataservice.controller.app;
 
+import com.game.dataservice.common.ApiResponse;
 import com.game.dataservice.entity.User;
 import com.game.dataservice.repository.UserRepository;
 import com.game.dataservice.service.WechatAuthService;
@@ -26,27 +27,27 @@ public class AppUserController {
 
     @Operation(summary = "微信小程序一键登录", description = "使用 wx.login() 获取的 code 换取 openid 并签发 JWT")
     @PostMapping("/wx-login")
-    public ResponseEntity<Map<String, Object>> wxLogin(@RequestBody WxLoginRequest request) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> wxLogin(@RequestBody WxLoginRequest request) {
         Map<String, Object> result = wechatAuthService.login(request.getCode());
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     @Operation(summary = "获取当前用户信息", description = "获取当前已登录用户的资料信息")
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/me")
-    public ResponseEntity<User> getCurrentUser() {
+    public ResponseEntity<ApiResponse<User>> getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String userIdStr = (String) auth.getPrincipal();
         
         return userRepository.findById(Long.parseLong(userIdStr))
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .map(user -> ResponseEntity.ok(ApiResponse.success(user)))
+                .orElse(ResponseEntity.ok(ApiResponse.error(404, "User not found")));
     }
 
     @Operation(summary = "更新用户资料", description = "更新昵称、头像与行政区划（国家/省/市/区）ID")
     @SecurityRequirement(name = "bearerAuth")
     @PutMapping("/profile")
-    public ResponseEntity<User> updateProfile(@RequestBody UpdateProfileRequest request) {
+    public ResponseEntity<ApiResponse<User>> updateProfile(@RequestBody UpdateProfileRequest request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String userIdStr = (String) auth.getPrincipal();
         
@@ -59,7 +60,7 @@ public class AppUserController {
                 request.getCityId(),
                 request.getDistrictId()
         );
-        return ResponseEntity.ok(updatedUser);
+        return ResponseEntity.ok(ApiResponse.success(updatedUser));
     }
 
     @Data

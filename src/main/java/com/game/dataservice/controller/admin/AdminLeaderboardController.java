@@ -1,5 +1,6 @@
 package com.game.dataservice.controller.admin;
 
+import com.game.dataservice.common.ApiResponse;
 import com.game.dataservice.model.GameData;
 import com.game.dataservice.service.DataSyncService;
 import com.game.dataservice.service.DisasterRecoveryService;
@@ -26,36 +27,36 @@ public class AdminLeaderboardController {
 
     @Operation(summary = "手动同步通关数据", description = "手动提交一次通关事件（用于模拟 Kafka 消息）")
     @PostMapping("/sync")
-    public ResponseEntity<String> manualSync(@RequestBody GameData gameData) {
+    public ResponseEntity<ApiResponse<String>> manualSync(@RequestBody GameData gameData) {
         try {
             String message = objectMapper.writeValueAsString(gameData);
             dataSyncService.consumeGameData(message);
-            return ResponseEntity.ok("同步成功");
+            return ResponseEntity.ok(ApiResponse.success("同步成功", null));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("同步失败：" + e.getMessage());
+            return ResponseEntity.ok(ApiResponse.error(500, "同步失败：" + e.getMessage()));
         }
     }
 
     @Operation(summary = "强制设置榜单分数", description = "为指定榜单 Key 强制写入绝对分数（例如：game:lb:global:xxx）")
     @PutMapping("/force-score")
-    public ResponseEntity<String> forceUpdateScore(
+    public ResponseEntity<ApiResponse<String>> forceUpdateScore(
             @RequestParam String key,
             @RequestParam String userId,
             @RequestParam double score) {
         leaderboardService.updateAbsoluteScore(key, userId, score);
-        return ResponseEntity.ok("写入成功");
+        return ResponseEntity.ok(ApiResponse.success("写入成功", null));
     }
 
     @Operation(summary = "触发容灾恢复", description = "基于 MySQL 通关流水重建 Redis 榜单（day/week/month/all）")
     @PostMapping("/disaster-recovery/{gameId}")
-    public ResponseEntity<String> triggerDisasterRecovery(@PathVariable String gameId) {
+    public ResponseEntity<ApiResponse<String>> triggerDisasterRecovery(@PathVariable String gameId) {
         try {
             // 在生产环境中，为了防止超时，这里可以使用异步线程池去跑，或者丢给MQ去跑。
             // 这里为了演示直接同步调用
             disasterRecoveryService.recoverRedisLeaderboards(gameId);
-            return ResponseEntity.ok("容灾恢复完成，游戏：" + gameId);
+            return ResponseEntity.ok(ApiResponse.success("容灾恢复完成，游戏：" + gameId, null));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("容灾恢复失败：" + e.getMessage());
+            return ResponseEntity.ok(ApiResponse.error(500, "容灾恢复失败：" + e.getMessage()));
         }
     }
 }

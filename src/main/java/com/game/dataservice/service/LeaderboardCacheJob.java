@@ -60,7 +60,7 @@ public class LeaderboardCacheJob {
 
     private void cacheGlobalLeaderboard(String gameId, String period) throws Exception {
         List<LeaderboardEntry> list = leaderboardService.getGlobalLeaderboard(gameId, period, TOP_N);
-        String json = objectMapper.writeValueAsString(list);
+        String json = objectMapper.writeValueAsString(com.game.dataservice.common.ApiResponse.success(list));
         String cacheKey = CACHE_PREFIX + "global:" + gameId + ":" + period;
         redisTemplate.opsForValue().set(cacheKey, json, Duration.ofMinutes(6)); // 稍微多给一分钟，防止并发时穿透
         log.debug("已缓存全服榜单，gameId：{}，周期：{}", gameId, period);
@@ -68,7 +68,7 @@ public class LeaderboardCacheJob {
 
     private void cacheProvinceLeaderboard(String gameId, String period, Integer provinceId) throws Exception {
         List<LeaderboardEntry> list = leaderboardService.getProvinceLeaderboard(gameId, period, provinceId, TOP_N);
-        String json = objectMapper.writeValueAsString(list);
+        String json = objectMapper.writeValueAsString(com.game.dataservice.common.ApiResponse.success(list));
         String cacheKey = CACHE_PREFIX + "prov:" + gameId + ":" + period + ":" + provinceId;
         redisTemplate.opsForValue().set(cacheKey, json, Duration.ofMinutes(6));
     }
@@ -76,12 +76,12 @@ public class LeaderboardCacheJob {
     private void cacheRegionRanking(String gameId, String period) throws Exception {
         // 省份排行缓存
         List<com.game.dataservice.model.RegionLeaderboardEntry> provList = leaderboardService.getProvinceRanking(gameId, period, TOP_N);
-        String provJson = objectMapper.writeValueAsString(provList);
+        String provJson = objectMapper.writeValueAsString(com.game.dataservice.common.ApiResponse.success(provList));
         redisTemplate.opsForValue().set(CACHE_PREFIX + "ranking:prov:" + gameId + ":" + period, provJson, Duration.ofMinutes(6));
 
         // 城市排行缓存
         List<com.game.dataservice.model.RegionLeaderboardEntry> cityList = leaderboardService.getCityRanking(gameId, period, TOP_N);
-        String cityJson = objectMapper.writeValueAsString(cityList);
+        String cityJson = objectMapper.writeValueAsString(com.game.dataservice.common.ApiResponse.success(cityList));
         redisTemplate.opsForValue().set(CACHE_PREFIX + "ranking:city:" + gameId + ":" + period, cityJson, Duration.ofMinutes(6));
     }
 
