@@ -22,9 +22,9 @@ public class DataSyncService {
     public void consumeGameData(String message) {
         try {
             GameData gameData = objectMapper.readValue(message, GameData.class);
-            log.info("Received game data sync event: {}", gameData);
+            log.info("收到游戏数据同步事件：{}", gameData);
             
-            // 1. Process the sync event, e.g., update leaderboard in Redis
+            // 1. 处理同步事件：更新 Redis 榜单
             leaderboardService.recordLevelClear(
                     gameData.getGameId(), 
                     gameData.getUserId(), 
@@ -32,7 +32,7 @@ public class DataSyncService {
                     gameData.getCityId()
             );
             
-            // 2. Persist the game data record into MySQL
+            // 2. 将通关记录持久化到 MySQL
             GameRecord record = GameRecord.builder()
                     .gameId(gameData.getGameId())
                     .userId(gameData.getUserId())
@@ -40,10 +40,10 @@ public class DataSyncService {
                     .timestamp(gameData.getTimestamp())
                     .build();
             gameRecordRepository.save(record);
-            log.debug("Persisted game record to database: {}", record.getId());
+            log.debug("通关记录已落库，记录ID：{}", record.getId());
             
         } catch (Exception e) {
-            log.error("Failed to process game data sync event: {}", message, e);
+            log.error("处理游戏数据同步事件失败：{}", message, e);
         }
     }
 }

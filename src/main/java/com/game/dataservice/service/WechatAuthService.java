@@ -49,8 +49,8 @@ public class WechatAuthService {
             JsonNode jsonNode = objectMapper.readTree(response);
             
             if (jsonNode.has("errcode") && jsonNode.get("errcode").asInt() != 0) {
-                log.error("Wechat login failed: {}", response);
-                throw new RuntimeException("Wechat login failed: " + jsonNode.get("errmsg").asText());
+                log.error("微信登录失败：{}", response);
+                throw new RuntimeException("微信登录失败：" + jsonNode.get("errmsg").asText());
             }
 
             String openid = jsonNode.get("openid").asText();
@@ -74,7 +74,7 @@ public class WechatAuthService {
                 userRepository.save(user);
             }
 
-            // 3. 生成 JWT Token
+            // 3. 生成 JWT 令牌
             String token = jwtUtils.generateToken(user.getId().toString(), "USER");
 
             return Map.of(
@@ -83,8 +83,8 @@ public class WechatAuthService {
                     "openid", user.getOpenid()
             );
         } catch (Exception e) {
-            log.error("Error during wechat login", e);
-            throw new RuntimeException("Error during wechat login", e);
+            log.error("微信登录处理异常", e);
+            throw new RuntimeException("微信登录处理异常", e);
         }
     }
     
@@ -93,7 +93,7 @@ public class WechatAuthService {
      */
     public User updateUserInfo(Long userId, String nickname, String avatarUrl, Integer countryId, Integer provinceId, Integer cityId, Integer districtId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
         
         if (nickname != null) user.setNickname(nickname);
         if (avatarUrl != null) user.setAvatarUrl(avatarUrl);

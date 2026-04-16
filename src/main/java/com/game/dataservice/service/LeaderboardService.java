@@ -25,7 +25,7 @@ public class LeaderboardService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final RegionCacheService regionCacheService;
 
-    // Keys base definition
+    // Redis Key 前缀定义
     private static final String KEY_GLOBAL = "game:lb:global:";
     private static final String KEY_PROV = "game:lb:prov:";
     private static final String KEY_CITY = "game:lb:city:";
@@ -33,7 +33,7 @@ public class LeaderboardService {
     private static final String KEY_REGION_CITY = "game:lb:region:city:";
     private static final String KEY_DAILY = "game:daily:clears:";
     
-    // Period specific formats
+    // 周期格式化
     private static final DateTimeFormatter DAY_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyyMM");
 
@@ -63,7 +63,7 @@ public class LeaderboardService {
         redisTemplate.opsForHash().increment(dailyKey, userId, 1);
         redisTemplate.expire(dailyKey, Duration.ofDays(2));
 
-        log.debug("Recorded level clear for user {} in game {}, provId: {}, cityId: {}", userId, gameId, provinceId, cityId);
+        log.debug("记录通关事件，userId：{}，gameId：{}，provinceId：{}，cityId：{}", userId, gameId, provinceId, cityId);
     }
 
     private void incrementScores(String gamePeriodKey, String userId, Integer provinceId, Integer cityId, String type, int expireDays) {

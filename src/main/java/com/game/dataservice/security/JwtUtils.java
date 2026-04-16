@@ -58,13 +58,13 @@ public class JwtUtils {
             Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(authToken);
             return true;
         } catch (MalformedJwtException e) {
-            log.error("Invalid JWT token: {}", e.getMessage());
+            log.error("无效的 JWT：{}", e.getMessage());
         } catch (ExpiredJwtException e) {
-            log.error("JWT token is expired: {}", e.getMessage());
+            log.error("JWT 已过期：{}", e.getMessage());
         } catch (UnsupportedJwtException e) {
-            log.error("JWT token is unsupported: {}", e.getMessage());
+            log.error("不支持的 JWT：{}", e.getMessage());
         } catch (IllegalArgumentException e) {
-            log.error("JWT claims string is empty: {}", e.getMessage());
+            log.error("JWT 声明为空：{}", e.getMessage());
         }
         return false;
     }

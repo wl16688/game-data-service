@@ -18,21 +18,21 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/app/leaderboard")
 @RequiredArgsConstructor
-@Tag(name = "App Leaderboard", description = "Frontend Client Endpoints (Requires USER/ADMIN JWT)")
+@Tag(name = "小程序排行榜", description = "小程序端排行榜接口（需要 USER/ADMIN JWT）")
 @SecurityRequirement(name = "bearerAuth")
 public class AppLeaderboardController {
 
     private final LeaderboardService leaderboardService;
     private final LeaderboardCacheJob leaderboardCacheJob;
 
-    @Operation(summary = "Get Global Top Players (Cached)", description = "Fetch top N players globally (day, week, month, all). Updated every 5 mins.")
+    @Operation(summary = "获取全服排行榜（缓存）", description = "获取全服前 N 名（day/week/month/all），每 5 分钟更新一次缓存")
     @GetMapping("/{gameId}/global")
     public ResponseEntity<?> getGlobalTop(
             @PathVariable String gameId,
             @RequestParam(defaultValue = "day") String period,
             @RequestParam(defaultValue = "100") int limit) {
         
-        // 尝试从5分钟缓存读取
+        // 优先从 5 分钟缓存读取
         String cachedJson = leaderboardCacheJob.getCachedGlobalLeaderboard(gameId, period);
         if (cachedJson != null) {
             return ResponseEntity.ok()
@@ -40,11 +40,11 @@ public class AppLeaderboardController {
                     .body(cachedJson);
         }
         
-        // 兜底直接查Redis ZSet实时数据
+        // 未命中缓存则直接查询 Redis ZSet 实时数据
         return ResponseEntity.ok(leaderboardService.getGlobalLeaderboard(gameId, period, limit));
     }
 
-    @Operation(summary = "Get Province Top Players (Cached)", description = "Fetch top N players in a province (day, week, month, all). Updated every 5 mins.")
+    @Operation(summary = "获取省内排行榜（缓存）", description = "获取某省前 N 名（day/week/month/all），每 5 分钟更新一次缓存")
     @GetMapping("/{gameId}/province/{provinceId}")
     public ResponseEntity<?> getProvinceTop(
             @PathVariable String gameId,
@@ -52,7 +52,7 @@ public class AppLeaderboardController {
             @RequestParam(defaultValue = "day") String period,
             @RequestParam(defaultValue = "100") int limit) {
             
-        // 尝试从5分钟缓存读取
+        // 优先从 5 分钟缓存读取
         String cachedJson = leaderboardCacheJob.getCachedProvinceLeaderboard(gameId, period, String.valueOf(provinceId));
         if (cachedJson != null) {
             return ResponseEntity.ok()
@@ -60,22 +60,22 @@ public class AppLeaderboardController {
                     .body(cachedJson);
         }
         
-        // 兜底直接查Redis ZSet实时数据
+        // 未命中缓存则直接查询 Redis ZSet 实时数据
         return ResponseEntity.ok(leaderboardService.getProvinceLeaderboard(gameId, period, provinceId, limit));
     }
 
-    @Operation(summary = "Get City Top Players (Real-time)", description = "Fetch top N players in a specific city")
+    @Operation(summary = "获取市内排行榜（实时）", description = "获取某市前 N 名（day/week/month/all），不做全量预热缓存")
     @GetMapping("/{gameId}/city/{cityId}")
     public ResponseEntity<List<LeaderboardEntry>> getCityTop(
             @PathVariable String gameId,
             @PathVariable Integer cityId,
             @RequestParam(defaultValue = "day") String period,
             @RequestParam(defaultValue = "100") int limit) {
-        // City 太多不适合全部预热，采用直接查实时ZSet的方式
+        // 城市数量较多，不适合全量预热，直接查询实时 ZSet
         return ResponseEntity.ok(leaderboardService.getCityLeaderboard(gameId, period, cityId, limit));
     }
 
-    @Operation(summary = "Get Provinces Ranking (Cached)", description = "Fetch ranking of all provinces by total level clears")
+    @Operation(summary = "获取省份总榜（缓存）", description = "按通关总数对全国所有省份进行排行（day/week/month/all），每 5 分钟更新一次缓存")
     @GetMapping("/{gameId}/ranking/province")
     public ResponseEntity<?> getProvinceRanking(
             @PathVariable String gameId,
@@ -92,7 +92,7 @@ public class AppLeaderboardController {
         return ResponseEntity.ok(leaderboardService.getProvinceRanking(gameId, period, limit));
     }
 
-    @Operation(summary = "Get Cities Ranking (Cached)", description = "Fetch ranking of all cities by total level clears")
+    @Operation(summary = "获取城市总榜（缓存）", description = "按通关总数对全国所有城市进行排行（day/week/month/all），每 5 分钟更新一次缓存")
     @GetMapping("/{gameId}/ranking/city")
     public ResponseEntity<?> getCityRanking(
             @PathVariable String gameId,
@@ -109,7 +109,7 @@ public class AppLeaderboardController {
         return ResponseEntity.ok(leaderboardService.getCityRanking(gameId, period, limit));
     }
 
-    @Operation(summary = "Get My Stats", description = "Fetch stats (global/prov/city ranks, daily levels) for the current user")
+    @Operation(summary = "获取我的统计信息", description = "获取当前用户的全服/省内/市内排名，以及当日通关数等统计")
     @GetMapping("/{gameId}/me/stats")
     public ResponseEntity<UserStats> getMyStats(
             @PathVariable String gameId,

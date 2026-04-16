@@ -16,9 +16,9 @@ public class OpenApiConfig {
         final String securitySchemeName = "bearerAuth";
         return new OpenAPI()
                 .info(new Info()
-                        .title("Game Data Service API")
+                        .title("游戏数据服务 API")
                         .version("1.0")
-                        .description("API Documentation for Game Data Service (App and Admin)"))
+                        .description("游戏数据服务接口文档（小程序端/管理端）"))
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
                 .components(
                         new Components()

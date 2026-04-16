@@ -18,20 +18,20 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/app/user")
 @RequiredArgsConstructor
-@Tag(name = "App User & Auth", description = "WeChat Miniapp Login and User Management")
+@Tag(name = "小程序用户与认证", description = "微信小程序一键登录与用户资料管理")
 public class AppUserController {
 
     private final WechatAuthService wechatAuthService;
     private final UserRepository userRepository;
 
-    @Operation(summary = "WeChat Miniapp Login", description = "Login using wx.login() code")
+    @Operation(summary = "微信小程序一键登录", description = "使用 wx.login() 获取的 code 换取 openid 并签发 JWT")
     @PostMapping("/wx-login")
     public ResponseEntity<Map<String, Object>> wxLogin(@RequestBody WxLoginRequest request) {
         Map<String, Object> result = wechatAuthService.login(request.getCode());
         return ResponseEntity.ok(result);
     }
 
-    @Operation(summary = "Get Current User Info", description = "Get details of the currently authenticated user")
+    @Operation(summary = "获取当前用户信息", description = "获取当前已登录用户的资料信息")
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/me")
     public ResponseEntity<User> getCurrentUser() {
@@ -43,7 +43,7 @@ public class AppUserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @Operation(summary = "Update User Profile", description = "Update nickname, avatar, countryId, provinceId, cityId, districtId")
+    @Operation(summary = "更新用户资料", description = "更新昵称、头像与行政区划（国家/省/市/区）ID")
     @SecurityRequirement(name = "bearerAuth")
     @PutMapping("/profile")
     public ResponseEntity<User> updateProfile(@RequestBody UpdateProfileRequest request) {

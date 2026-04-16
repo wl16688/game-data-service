@@ -12,19 +12,19 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@Tag(name = "Authentication", description = "Mock endpoints to generate JWT tokens")
+@Tag(name = "认证", description = "用于获取 JWT Token 的模拟登录接口")
 public class AuthController {
 
     private final JwtUtils jwtUtils;
 
-    @Operation(summary = "Login as App User", description = "Returns a JWT token with USER role")
+    @Operation(summary = "小程序用户登录", description = "返回带 USER 角色的 JWT Token")
     @PostMapping("/login/user")
     public ResponseEntity<?> loginUser(@RequestParam String username) {
         String token = jwtUtils.generateToken(username, "USER");
         return ResponseEntity.ok(Map.of("token", token, "role", "USER"));
     }
 
-    @Operation(summary = "Login as Admin", description = "Returns a JWT token with ADMIN role")
+    @Operation(summary = "管理员登录", description = "返回带 ADMIN 角色的 JWT Token")
     @PostMapping("/login/admin")
     public ResponseEntity<?> loginAdmin(@RequestParam String username) {
         String token = jwtUtils.generateToken(username, "ADMIN");

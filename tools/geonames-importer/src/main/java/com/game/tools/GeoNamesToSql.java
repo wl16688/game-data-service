@@ -33,7 +33,7 @@ public class GeoNamesToSql {
         String name;
         String countryCode;
         String featureCode;
-        int level; // 1:Country, 2:ADM1, 3:ADM2, 4:ADM3, 5:ADM4
+        int level; // 1:国家, 2:ADM1(省/州), 3:ADM2(市/县), 4:ADM3, 5:ADM4
 
         Node(int id, String name, String countryCode, String featureCode) {
             this.id = id;
@@ -44,7 +44,7 @@ public class GeoNamesToSql {
         }
 
         private int parseLevel(String fcode) {
-            if (fcode.startsWith("PCL")) return 1; // Country
+            if (fcode.startsWith("PCL")) return 1; // 国家（PCLI / PCLD 等）
             if (fcode.equals("ADM1")) return 2;
             if (fcode.equals("ADM2")) return 3;
             if (fcode.equals("ADM3")) return 4;
@@ -54,7 +54,7 @@ public class GeoNamesToSql {
     }
 
     public static void main(String[] args) throws Exception {
-        System.out.println("Starting GeoNames ADM4 SQL Generator...");
+        System.out.println("开始执行 GeoNames 行政区划（ADM1-ADM4）SQL 生成...");
         Files.createDirectories(Paths.get(WORK_DIR));
 
         // 1. 下载并解压必要文件
@@ -78,11 +78,11 @@ public class GeoNamesToSql {
         // 6. 生成 SQL
         generateSql();
         
-        System.out.println("Done! SQL file generated at: " + WORK_DIR + "/regions_full.sql");
+        System.out.println("完成！SQL 文件已生成：" + WORK_DIR + "/regions_full.sql");
     }
 
     private static void parseCountryInfo() throws IOException {
-        System.out.println("Parsing countryInfo.txt...");
+        System.out.println("解析 countryInfo.txt...");
         try (BufferedReader br = new BufferedReader(new FileReader(WORK_DIR + "/countryInfo.txt"))) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -102,7 +102,7 @@ public class GeoNamesToSql {
     }
 
     private static void parseAlternateNames() throws IOException {
-        System.out.println("Parsing alternateNamesV2.txt (Extracting ZH names)...");
+        System.out.println("解析 alternateNamesV2.txt（提取中文名称）...");
         try (BufferedReader br = new BufferedReader(new FileReader(WORK_DIR + "/alternateNamesV2.txt"))) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -121,7 +121,7 @@ public class GeoNamesToSql {
     }
 
     private static void parseAllCountries() throws IOException {
-        System.out.println("Parsing allCountries.txt (Filtering ADM1-ADM4 for target countries)...");
+        System.out.println("解析 allCountries.txt（按国家过滤 ADM1-ADM4）...");
         try (BufferedReader br = new BufferedReader(new FileReader(WORK_DIR + "/allCountries.txt"))) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -143,11 +143,11 @@ public class GeoNamesToSql {
                 }
             }
         }
-        System.out.println("Filtered " + nodes.size() + " administrative nodes.");
+        System.out.println("已筛选行政区节点数量：" + nodes.size());
     }
 
     private static void parseHierarchy() throws IOException {
-        System.out.println("Parsing hierarchy.txt (Building parent-child relations)...");
+        System.out.println("解析 hierarchy.txt（构建父子层级关系）...");
         try (BufferedReader br = new BufferedReader(new FileReader(WORK_DIR + "/hierarchy.txt"))) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -173,7 +173,7 @@ public class GeoNamesToSql {
             }
         }
 
-        // 兜底策略：没有在 hierarchy 中找到父亲的 ADM1，挂到对应的 Country Root 上
+        // 兜底策略：没有在 hierarchy 中找到父节点的 ADM1，挂到对应的国家根节点上
         for (Node node : nodes.values()) {
             if (node.level == 2 && !hierarchy.containsKey(node.id)) {
                 Integer rootId = countryRoots.get(node.countryCode);
@@ -185,10 +185,10 @@ public class GeoNamesToSql {
     }
 
     private static void generateSql() throws IOException {
-        System.out.println("Generating regions_full.sql...");
+        System.out.println("生成 regions_full.sql...");
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(WORK_DIR + "/regions_full.sql", StandardCharsets.UTF_8))) {
-            bw.write("-- GeoNames Administrative Regions (Level 1-5: Country/ADM1/ADM2/ADM3/ADM4)\n");
-            bw.write("-- Target Countries: " + TARGET_COUNTRIES + "\n");
+            bw.write("-- GeoNames 行政区划（层级 1-5：国家/ADM1/ADM2/ADM3/ADM4）\n");
+            bw.write("-- 目标国家：" + TARGET_COUNTRIES + "\n");
             bw.write("TRUNCATE TABLE regions;\n");
             bw.write("INSERT INTO regions (id, parent_id, name, level) VALUES\n");
 
@@ -196,7 +196,7 @@ public class GeoNamesToSql {
             for (Node node : nodes.values()) {
                 // 获取上级ID
                 int parentId = hierarchy.getOrDefault(node.id, 0);
-                if (node.level == 1) parentId = 0; // Country has no parent
+                if (node.level == 1) parentId = 0; // 国家无上级
 
                 // 获取名称（优先使用中文名）
                 String finalName = zhNames.getOrDefault(node.id, node.name);
@@ -216,11 +216,11 @@ public class GeoNamesToSql {
     private static void downloadAndUnzip(String urlStr, String targetTxtFile) throws Exception {
         Path targetPath = Paths.get(WORK_DIR, targetTxtFile);
         if (Files.exists(targetPath)) {
-            System.out.println("File already exists, skipping download: " + targetTxtFile);
+            System.out.println("文件已存在，跳过下载：" + targetTxtFile);
             return;
         }
 
-        System.out.println("Downloading " + urlStr + "...");
+        System.out.println("开始下载：" + urlStr);
         Path zipPath = Paths.get(WORK_DIR, targetTxtFile + ".zip");
         
         // countryInfo.txt 是直接文本下载，不是 zip
@@ -237,7 +237,7 @@ public class GeoNamesToSql {
         }
 
         // 解压 ZIP 中的目标 TXT 文件
-        System.out.println("Unzipping " + targetTxtFile + "...");
+        System.out.println("开始解压：" + targetTxtFile);
         try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipPath.toFile()))) {
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {

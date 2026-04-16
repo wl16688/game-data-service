@@ -19,9 +19,9 @@ public class RegionCacheService {
 
     @PostConstruct
     public void init() {
-        log.info("Loading regions into memory cache...");
+        log.info("开始加载行政区划到内存缓存...");
         regionRepository.findAll().forEach(r -> regionMap.put(r.getId(), r.getName()));
-        log.info("Loaded {} regions.", regionMap.size());
+        log.info("行政区划加载完成，数量：{}", regionMap.size());
     }
 
     public String getName(Integer id) {

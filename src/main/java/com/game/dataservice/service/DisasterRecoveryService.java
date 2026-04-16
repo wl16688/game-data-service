@@ -32,7 +32,7 @@ public class DisasterRecoveryService {
      * 该操作较重，生产环境建议异步执行或在业务低峰期执行
      */
     public void recoverRedisLeaderboards(String gameId) {
-        log.warn("Starting Redis Disaster Recovery for gameId: {}", gameId);
+        log.warn("开始执行 Redis 容灾恢复，gameId：{}", gameId);
         
         LocalDate today = LocalDate.now();
         
@@ -62,16 +62,16 @@ public class DisasterRecoveryService {
         String allPeriodKey = leaderboardService.getPeriodKey(gameId, "all");
         recoverPeriodData(gameId, allPeriodKey, minTime, maxTime, 0);
 
-        log.warn("Finished Redis Disaster Recovery for gameId: {}", gameId);
+        log.warn("Redis 容灾恢复完成，gameId：{}", gameId);
     }
 
     /**
      * 恢复特定时间段的排行榜数据
      */
     private void recoverPeriodData(String gameId, String periodKey, LocalDateTime start, LocalDateTime end, int expireDays) {
-        log.info("Recovering period: {} ({} to {})", periodKey, start, end);
+        log.info("开始恢复周期榜单：{}（{} ~ {}）", periodKey, start, end);
 
-        // 1. 恢复 Global 全局玩家榜
+        // 1. 恢复全服玩家榜
         List<Map<String, Object>> globalScores = gameRecordRepository.countUserScoresByPeriod(gameId, start, end);
         String globalKey = "game:lb:global:" + periodKey;
         writeToZSet(globalKey, globalScores, "userId", expireDays);
@@ -79,12 +79,12 @@ public class DisasterRecoveryService {
         // 2. 恢复全国各省份总分榜
         List<Map<String, Object>> provScores = gameRecordRepository.countProvinceScoresByPeriod(gameId, start, end);
         String regionProvKey = "game:lb:region:prov:" + periodKey;
-        writeToZSet(regionProvKey, provScores, "regionName", expireDays);
+        writeToZSet(regionProvKey, provScores, "regionId", expireDays);
 
         // 3. 恢复全国各城市总分榜
         List<Map<String, Object>> cityScores = gameRecordRepository.countCityScoresByPeriod(gameId, start, end);
         String regionCityKey = "game:lb:region:city:" + periodKey;
-        writeToZSet(regionCityKey, cityScores, "regionName", expireDays);
+        writeToZSet(regionCityKey, cityScores, "regionId", expireDays);
 
         // 4. 恢复省份内部玩家榜（找出这段时间内有活跃的省份）
         Set<Integer> activeProvinces = new HashSet<>();

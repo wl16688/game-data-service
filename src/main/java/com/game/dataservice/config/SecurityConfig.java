@@ -23,11 +23,11 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints for auth and Swagger docs
+                        // 公开接口：认证与 Swagger 文档
                         .requestMatchers("/api/auth/**", "/api/app/user/wx-login", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        // Admin endpoints require ADMIN role
+                        // 管理端接口：需要 ADMIN 角色
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        // App endpoints require user authentication (or USER role)
+                        // 小程序端接口：需要登录（USER 或 ADMIN 角色）
                         .requestMatchers("/api/app/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated()
                 );

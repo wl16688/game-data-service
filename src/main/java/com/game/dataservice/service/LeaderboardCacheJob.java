@@ -36,7 +36,7 @@ public class LeaderboardCacheJob {
      */
     @Scheduled(fixedRate = 300000)
     public void refreshLeaderboardCache() {
-        log.info("Starting leaderboard cache refresh job...");
+        log.info("开始刷新排行榜缓存任务...");
         try {
             for (String gameId : activeGames) {
                 for (String period : periods) {
@@ -52,9 +52,9 @@ public class LeaderboardCacheJob {
                     }
                 }
             }
-            log.info("Finished leaderboard cache refresh job.");
+            log.info("排行榜缓存刷新任务完成。");
         } catch (Exception e) {
-            log.error("Error refreshing leaderboard cache", e);
+            log.error("刷新排行榜缓存任务异常", e);
         }
     }
 
@@ -63,7 +63,7 @@ public class LeaderboardCacheJob {
         String json = objectMapper.writeValueAsString(list);
         String cacheKey = CACHE_PREFIX + "global:" + gameId + ":" + period;
         redisTemplate.opsForValue().set(cacheKey, json, Duration.ofMinutes(6)); // 稍微多给一分钟，防止并发时穿透
-        log.debug("Cached global leaderboard for game {}, period {}", gameId, period);
+        log.debug("已缓存全服榜单，gameId：{}，周期：{}", gameId, period);
     }
 
     private void cacheProvinceLeaderboard(String gameId, String period, Integer provinceId) throws Exception {
