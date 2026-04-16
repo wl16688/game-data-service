@@ -12,7 +12,7 @@ import java.util.Map;
 
 @Repository
 public interface GameRecordRepository extends JpaRepository<GameRecord, Long> {
-    List<GameRecord> findByGameIdAndUserId(String gameId, String userId);
+    List<GameRecord> findByGameIdAndUserId(Long gameId, String userId);
 
     /**
      * 容灾恢复：统计指定时间段内，各用户的通关总数
@@ -23,7 +23,7 @@ public interface GameRecordRepository extends JpaRepository<GameRecord, Long> {
            "AND r.createdAt >= :startTime AND r.createdAt < :endTime " +
            "GROUP BY r.userId")
     List<Map<String, Object>> countUserScoresByPeriod(
-            @Param("gameId") String gameId,
+            @Param("gameId") Long gameId,
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime);
 
@@ -36,7 +36,7 @@ public interface GameRecordRepository extends JpaRepository<GameRecord, Long> {
            "AND r.createdAt >= :startTime AND r.createdAt < :endTime " +
            "GROUP BY r.userId")
     List<Map<String, Object>> countUserScoresByProvinceAndPeriod(
-            @Param("gameId") String gameId,
+            @Param("gameId") Long gameId,
             @Param("provinceId") Integer provinceId,
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime);
@@ -50,7 +50,7 @@ public interface GameRecordRepository extends JpaRepository<GameRecord, Long> {
            "AND r.createdAt >= :startTime AND r.createdAt < :endTime " +
            "GROUP BY r.userId")
     List<Map<String, Object>> countUserScoresByCityAndPeriod(
-            @Param("gameId") String gameId,
+            @Param("gameId") Long gameId,
             @Param("cityId") Integer cityId,
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime);
@@ -64,7 +64,7 @@ public interface GameRecordRepository extends JpaRepository<GameRecord, Long> {
            "AND r.createdAt >= :startTime AND r.createdAt < :endTime " +
            "GROUP BY u.provinceId")
     List<Map<String, Object>> countProvinceScoresByPeriod(
-            @Param("gameId") String gameId,
+            @Param("gameId") Long gameId,
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime);
 
@@ -77,7 +77,7 @@ public interface GameRecordRepository extends JpaRepository<GameRecord, Long> {
            "AND r.createdAt >= :startTime AND r.createdAt < :endTime " +
            "GROUP BY u.cityId")
     List<Map<String, Object>> countCityScoresByPeriod(
-            @Param("gameId") String gameId,
+            @Param("gameId") Long gameId,
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime);
 }

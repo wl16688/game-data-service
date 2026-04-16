@@ -49,7 +49,7 @@ public class AdminLeaderboardController {
 
     @Operation(summary = "触发容灾恢复", description = "基于 MySQL 通关流水重建 Redis 榜单（day/week/month/all）")
     @PostMapping("/disaster-recovery/{gameId}")
-    public ResponseEntity<ApiResponse<String>> triggerDisasterRecovery(@PathVariable String gameId) {
+    public ResponseEntity<ApiResponse<String>> triggerDisasterRecovery(@PathVariable Long gameId) {
         try {
             // 在生产环境中，为了防止超时，这里可以使用异步线程池去跑，或者丢给MQ去跑。
             // 这里为了演示直接同步调用

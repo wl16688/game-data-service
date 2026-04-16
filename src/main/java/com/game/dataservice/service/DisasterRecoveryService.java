@@ -31,7 +31,7 @@ public class DisasterRecoveryService {
      * 触发全量 Redis 容灾恢复（针对某个 GameId）
      * 该操作较重，生产环境建议异步执行或在业务低峰期执行
      */
-    public void recoverRedisLeaderboards(String gameId) {
+    public void recoverRedisLeaderboards(Long gameId) {
         log.warn("开始执行 Redis 容灾恢复，gameId：{}", gameId);
         
         LocalDate today = LocalDate.now();
@@ -68,7 +68,7 @@ public class DisasterRecoveryService {
     /**
      * 恢复特定时间段的排行榜数据
      */
-    private void recoverPeriodData(String gameId, String periodKey, LocalDateTime start, LocalDateTime end, int expireDays) {
+    private void recoverPeriodData(Long gameId, String periodKey, LocalDateTime start, LocalDateTime end, int expireDays) {
         log.info("开始恢复周期榜单：{}（{} ~ {}）", periodKey, start, end);
 
         // 1. 恢复全服玩家榜

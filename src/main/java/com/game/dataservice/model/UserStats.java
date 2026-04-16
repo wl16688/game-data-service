@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserStats {
     private String userId;
-    private String gameId;
+    private Long gameId;
     private Double totalLevels;  // 总通关数
     private Long dailyLevels;    // 当日通关数
     private Long globalRank;     // 全球排名

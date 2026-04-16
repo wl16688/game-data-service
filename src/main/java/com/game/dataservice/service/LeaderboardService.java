@@ -40,26 +40,27 @@ public class LeaderboardService {
     /**
      * 记录玩家通关事件 (按周期更新)
      */
-    public void recordLevelClear(String gameId, String userId, Integer provinceId, Integer cityId) {
+    public void recordLevelClear(Long gameId, String userId, Integer provinceId, Integer cityId) {
+        String gameKey = String.valueOf(gameId);
         LocalDate now = LocalDate.now();
         String dayStr = now.format(DAY_FORMATTER);
         String weekStr = now.getYear() + "W" + now.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
         String monthStr = now.format(MONTH_FORMATTER);
 
         // 1. 更新总榜单
-        incrementScores(gameId, userId, provinceId, cityId, "all", 0);
+        incrementScores(gameKey, userId, provinceId, cityId, "all", 0);
         
         // 2. 更新日榜单 (保留3天)
-        incrementScores(gameId + ":day:" + dayStr, userId, provinceId, cityId, "day", 3);
+        incrementScores(gameKey + ":day:" + dayStr, userId, provinceId, cityId, "day", 3);
         
         // 3. 更新周榜单 (保留14天)
-        incrementScores(gameId + ":week:" + weekStr, userId, provinceId, cityId, "week", 14);
+        incrementScores(gameKey + ":week:" + weekStr, userId, provinceId, cityId, "week", 14);
         
         // 4. 更新月榜单 (保留60天)
-        incrementScores(gameId + ":month:" + monthStr, userId, provinceId, cityId, "month", 60);
+        incrementScores(gameKey + ":month:" + monthStr, userId, provinceId, cityId, "month", 60);
 
         // 5. 更新独立的每日通关统计Hash (用于用户个人中心展示)
-        String dailyKey = KEY_DAILY + gameId + ":" + dayStr;
+        String dailyKey = KEY_DAILY + gameKey + ":" + dayStr;
         redisTemplate.opsForHash().increment(dailyKey, userId, 1);
         redisTemplate.expire(dailyKey, Duration.ofDays(2));
 
@@ -126,35 +127,36 @@ public class LeaderboardService {
     /**
      * 辅助方法生成周期 Key
      */
-    public String getPeriodKey(String gameId, String period) {
+    public String getPeriodKey(Long gameId, String period) {
+        String gameKey = String.valueOf(gameId);
         LocalDate now = LocalDate.now();
         return switch (period.toLowerCase()) {
-            case "day" -> gameId + ":day:" + now.format(DAY_FORMATTER);
-            case "week" -> gameId + ":week:" + now.getYear() + "W" + now.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
-            case "month" -> gameId + ":month:" + now.format(MONTH_FORMATTER);
-            case "all" -> gameId;
-            default -> gameId;
+            case "day" -> gameKey + ":day:" + now.format(DAY_FORMATTER);
+            case "week" -> gameKey + ":week:" + now.getYear() + "W" + now.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
+            case "month" -> gameKey + ":month:" + now.format(MONTH_FORMATTER);
+            case "all" -> gameKey;
+            default -> gameKey;
         };
     }
 
     /**
      * 获取全局榜单
      */
-    public List<LeaderboardEntry> getGlobalLeaderboard(String gameId, String period, int topN) {
+    public List<LeaderboardEntry> getGlobalLeaderboard(Long gameId, String period, int topN) {
         return getLeaderboard(KEY_GLOBAL + getPeriodKey(gameId, period), topN);
     }
 
     /**
      * 获取省份榜单
      */
-    public List<LeaderboardEntry> getProvinceLeaderboard(String gameId, String period, Integer provinceId, int topN) {
+    public List<LeaderboardEntry> getProvinceLeaderboard(Long gameId, String period, Integer provinceId, int topN) {
         return getLeaderboard(KEY_PROV + getPeriodKey(gameId, period) + ":" + provinceId, topN);
     }
 
     /**
      * 获取城市榜单
      */
-    public List<LeaderboardEntry> getCityLeaderboard(String gameId, String period, Integer cityId, int topN) {
+    public List<LeaderboardEntry> getCityLeaderboard(Long gameId, String period, Integer cityId, int topN) {
         return getLeaderboard(KEY_CITY + getPeriodKey(gameId, period) + ":" + cityId, topN);
     }
 
@@ -185,21 +187,21 @@ public class LeaderboardService {
     /**
      * 获取省份之间的排行榜
      */
-    public List<RegionLeaderboardEntry> getProvinceRanking(String gameId, String period, int topN) {
+    public List<RegionLeaderboardEntry> getProvinceRanking(Long gameId, String period, int topN) {
         return getRegionLeaderboard(KEY_REGION_PROV + getPeriodKey(gameId, period), topN);
     }
 
     /**
      * 获取城市之间的排行榜
      */
-    public List<RegionLeaderboardEntry> getCityRanking(String gameId, String period, int topN) {
+    public List<RegionLeaderboardEntry> getCityRanking(Long gameId, String period, int topN) {
         return getRegionLeaderboard(KEY_REGION_CITY + getPeriodKey(gameId, period), topN);
     }
 
     /**
      * 获取特定用户的多维度统计数据
      */
-    public UserStats getUserStats(String gameId, String userId, Integer provinceId, Integer cityId) {
+    public UserStats getUserStats(Long gameId, String userId, Integer provinceId, Integer cityId) {
         String allPeriodKey = getPeriodKey(gameId, "all");
         
         Double globalScore = redisTemplate.opsForZSet().score(KEY_GLOBAL + allPeriodKey, userId);
@@ -216,7 +218,7 @@ public class LeaderboardService {
         }
 
         String today = LocalDate.now().format(DAY_FORMATTER);
-        String dailyKey = KEY_DAILY + gameId + ":" + today;
+        String dailyKey = KEY_DAILY + String.valueOf(gameId) + ":" + today;
         Object dailyObj = redisTemplate.opsForHash().get(dailyKey, userId);
         Long dailyLevels = dailyObj != null ? Long.parseLong(dailyObj.toString()) : 0L;
 

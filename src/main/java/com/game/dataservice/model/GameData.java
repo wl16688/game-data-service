@@ -13,7 +13,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class GameData implements Serializable {
     private String userId;
-    private String gameId;
+    private Long gameId;
     private String levelId; // 记录通关的关卡ID
     private Integer provinceId; // 用户所在省份ID
     private Integer cityId;     // 用户所在城市ID

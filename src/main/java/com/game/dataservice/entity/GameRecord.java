@@ -25,8 +25,8 @@ public class GameRecord {
     @Column(name = "user_id", nullable = false, length = 64)
     private String userId;
 
-    @Column(name = "game_id", nullable = false, length = 64)
-    private String gameId;
+    @Column(name = "game_id", nullable = false)
+    private Long gameId;
 
     @Column(name = "level_id", nullable = false, length = 64)
     private String levelId;

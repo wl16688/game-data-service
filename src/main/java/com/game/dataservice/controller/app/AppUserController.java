@@ -41,7 +41,7 @@ public class AppUserController {
         
         return userRepository.findById(Long.parseLong(userIdStr))
                 .map(user -> ResponseEntity.ok(ApiResponse.success(user)))
-                .orElse(ResponseEntity.ok(ApiResponse.error(404, "User not found")));
+                .orElse(ResponseEntity.ok(ApiResponse.error(404, "用户不存在")));
     }
 
     @Operation(summary = "更新用户资料", description = "更新昵称、头像与行政区划（国家/省/市/区）ID")

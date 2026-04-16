@@ -29,7 +29,7 @@ public class AppLeaderboardController {
     @Operation(summary = "获取全服排行榜（缓存）", description = "获取全服前 N 名（day/week/month/all），每 5 分钟更新一次缓存")
     @GetMapping("/{gameId}/global")
     public ResponseEntity<?> getGlobalTop(
-            @PathVariable String gameId,
+            @PathVariable Long gameId,
             @RequestParam(defaultValue = "day") String period,
             @RequestParam(defaultValue = "100") int limit) {
         
@@ -48,7 +48,7 @@ public class AppLeaderboardController {
     @Operation(summary = "获取省内排行榜（缓存）", description = "获取某省前 N 名（day/week/month/all），每 5 分钟更新一次缓存")
     @GetMapping("/{gameId}/province/{provinceId}")
     public ResponseEntity<?> getProvinceTop(
-            @PathVariable String gameId,
+            @PathVariable Long gameId,
             @PathVariable Integer provinceId,
             @RequestParam(defaultValue = "day") String period,
             @RequestParam(defaultValue = "100") int limit) {
@@ -68,7 +68,7 @@ public class AppLeaderboardController {
     @Operation(summary = "获取市内排行榜（实时）", description = "获取某市前 N 名（day/week/month/all），不做全量预热缓存")
     @GetMapping("/{gameId}/city/{cityId}")
     public ResponseEntity<ApiResponse<List<LeaderboardEntry>>> getCityTop(
-            @PathVariable String gameId,
+            @PathVariable Long gameId,
             @PathVariable Integer cityId,
             @RequestParam(defaultValue = "day") String period,
             @RequestParam(defaultValue = "100") int limit) {
@@ -79,7 +79,7 @@ public class AppLeaderboardController {
     @Operation(summary = "获取省份总榜（缓存）", description = "按通关总数对全国所有省份进行排行（day/week/month/all），每 5 分钟更新一次缓存")
     @GetMapping("/{gameId}/ranking/province")
     public ResponseEntity<?> getProvinceRanking(
-            @PathVariable String gameId,
+            @PathVariable Long gameId,
             @RequestParam(defaultValue = "day") String period,
             @RequestParam(defaultValue = "100") int limit) {
             
@@ -96,7 +96,7 @@ public class AppLeaderboardController {
     @Operation(summary = "获取城市总榜（缓存）", description = "按通关总数对全国所有城市进行排行（day/week/month/all），每 5 分钟更新一次缓存")
     @GetMapping("/{gameId}/ranking/city")
     public ResponseEntity<?> getCityRanking(
-            @PathVariable String gameId,
+            @PathVariable Long gameId,
             @RequestParam(defaultValue = "day") String period,
             @RequestParam(defaultValue = "100") int limit) {
             
@@ -113,7 +113,7 @@ public class AppLeaderboardController {
     @Operation(summary = "获取我的统计信息", description = "获取当前用户的全服/省内/市内排名，以及当日通关数等统计")
     @GetMapping("/{gameId}/me/stats")
     public ResponseEntity<ApiResponse<UserStats>> getMyStats(
-            @PathVariable String gameId,
+            @PathVariable Long gameId,
             @RequestParam(required = false) Integer provinceId,
             @RequestParam(required = false) Integer cityId) {
             
