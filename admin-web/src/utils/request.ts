@@ -4,7 +4,7 @@ import { ElMessage } from 'element-plus'
 const service = axios.create({
   baseURL: '/api',
   timeout: 10000,
-})
+}) as any
 
 service.interceptors.request.use(
   (config) => {
@@ -22,8 +22,6 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   (response) => {
     const res = response.data
-    // Assuming backend returns standard format: { code: 200, message: '...', data: ... }
-    // If not wrapped, return directly. Check structure.
     if (res && typeof res.code !== 'undefined') {
       if (res.code !== 200) {
         ElMessage.error(res.message || 'Error')
@@ -36,7 +34,6 @@ service.interceptors.response.use(
         return res.data
       }
     }
-    // Fallback if not standard ApiResponse
     return res
   },
   (error) => {

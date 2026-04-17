@@ -56,6 +56,43 @@ export const updateGame = (id: number, data: any) => {
   })
 }
 
+export const deleteGame = (id: number) => {
+  return request({
+    url: `/admin/games/${id}`,
+    method: 'delete'
+  })
+}
+
+export const fetchGamePlatforms = (gameId: number) => {
+  return request({
+    url: `/admin/games/${gameId}/platforms`,
+    method: 'get'
+  })
+}
+
+export const createGamePlatform = (gameId: number, data: any) => {
+  return request({
+    url: `/admin/games/${gameId}/platforms`,
+    method: 'post',
+    data
+  })
+}
+
+export const updateGamePlatform = (gameId: number, platformId: number, data: any) => {
+  return request({
+    url: `/admin/games/${gameId}/platforms/${platformId}`,
+    method: 'put',
+    data
+  })
+}
+
+export const deleteGamePlatform = (gameId: number, platformId: number) => {
+  return request({
+    url: `/admin/games/${gameId}/platforms/${platformId}`,
+    method: 'delete'
+  })
+}
+
 // 用户接口
 export const fetchUsers = (keyword?: string, page: number = 1, size: number = 10) => {
   return request({

@@ -98,8 +98,9 @@ public class AdminGameController {
         return gamePlatformRepository.findById(platformId)
                 .map(platform -> {
                     platform.setPlatform(platformDetails.getPlatform());
-                    platform.setVersion(platformDetails.getVersion());
+                    platform.setVersionName(platformDetails.getVersionName());
                     platform.setDownloadUrl(platformDetails.getDownloadUrl());
+                    platform.setPlayers(platformDetails.getPlayers());
                     return ResponseEntity.ok(ApiResponse.success(gamePlatformRepository.save(platform)));
                 })
                 .orElse(ResponseEntity.ok(ApiResponse.error(404, "平台信息不存在")));

@@ -1,44 +1,51 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import Layout from '@/layout/index.vue'
+import Dashboard from '@/views/Dashboard.vue'
+import Games from '@/views/Games.vue'
+import Users from '@/views/Users.vue'
+import Records from '@/views/Records.vue'
+import Leaderboards from '@/views/Leaderboards.vue'
+import Login from '@/views/Login.vue'
 
 const routes: RouteRecordRaw[] = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('@/views/Login.vue')
+    component: Login
   },
   {
     path: '/',
-    component: () => import('@/layout/index.vue'),
+    component: Layout,
     redirect: '/dashboard',
     children: [
       {
         path: 'dashboard',
         name: 'Dashboard',
-        component: () => import('@/views/Dashboard.vue'),
+        component: Dashboard,
         meta: { title: '控制台', icon: 'Odometer' }
       },
       {
         path: 'games',
         name: 'Games',
-        component: () => import('@/views/Games.vue'),
+        component: Games,
         meta: { title: '游戏管理', icon: 'Trophy' }
       },
       {
         path: 'users',
         name: 'Users',
-        component: () => import('@/views/Users.vue'),
+        component: Users,
         meta: { title: '用户管理', icon: 'User' }
       },
       {
         path: 'records',
         name: 'Records',
-        component: () => import('@/views/Records.vue'),
+        component: Records,
         meta: { title: '记录管理', icon: 'List' }
       },
       {
         path: 'leaderboards',
         name: 'Leaderboards',
-        component: () => import('@/views/Leaderboards.vue'),
+        component: Leaderboards,
         meta: { title: '排行榜维护', icon: 'DataLine' }
       }
     ]

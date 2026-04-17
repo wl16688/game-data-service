@@ -28,7 +28,7 @@
       </el-table-column>
       <el-table-column label="操作" width="150" align="center" fixed="right">
         <template #default="{ row }">
-          <el-button type="primary" link size="small" icon="Edit">编辑资料</el-button>
+          <el-button type="primary" link size="small" icon="Edit" @click="openEdit(row)">编辑资料</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -44,11 +44,44 @@
       />
     </div>
   </el-card>
+
+  <el-drawer v-model="drawerVisible" title="编辑用户资料" size="520px" destroy-on-close>
+    <el-form :model="editForm" label-width="90px">
+      <el-form-item label="用户ID">
+        <el-input v-model="editForm.id" disabled />
+      </el-form-item>
+      <el-form-item label="昵称">
+        <el-input v-model="editForm.nickname" placeholder="请输入昵称" />
+      </el-form-item>
+      <el-form-item label="头像URL">
+        <el-input v-model="editForm.avatarUrl" placeholder="https://..." />
+      </el-form-item>
+      <el-form-item label="国家ID">
+        <el-input-number v-model="editForm.countryId" :min="0" class="w-full" />
+      </el-form-item>
+      <el-form-item label="省份ID">
+        <el-input-number v-model="editForm.provinceId" :min="0" class="w-full" />
+      </el-form-item>
+      <el-form-item label="城市ID">
+        <el-input-number v-model="editForm.cityId" :min="0" class="w-full" />
+      </el-form-item>
+      <el-form-item label="区县ID">
+        <el-input-number v-model="editForm.districtId" :min="0" class="w-full" />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <div class="flex justify-end space-x-2">
+        <el-button @click="drawerVisible = false">取消</el-button>
+        <el-button type="primary" :loading="saving" @click="submitEdit">保存</el-button>
+      </div>
+    </template>
+  </el-drawer>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { fetchUsers } from '@/api'
+import { ElMessage } from 'element-plus'
+import { fetchUsers, updateUser } from '@/api'
 
 const users = ref<any[]>([])
 const loading = ref(false)
@@ -56,6 +89,18 @@ const keyword = ref('')
 const total = ref(0)
 const currentPage = ref(1)
 const pageSize = ref(10)
+const drawerVisible = ref(false)
+const saving = ref(false)
+
+const editForm = ref<any>({
+  id: '',
+  nickname: '',
+  avatarUrl: '',
+  countryId: null,
+  provinceId: null,
+  cityId: null,
+  districtId: null
+})
 
 const loadData = async () => {
   loading.value = true
@@ -83,4 +128,30 @@ const handlePageChange = (page: number) => {
 onMounted(() => {
   loadData()
 })
+
+const openEdit = (row: any) => {
+  editForm.value = {
+    id: row.id,
+    nickname: row.nickname || '',
+    avatarUrl: row.avatarUrl || '',
+    countryId: row.countryId,
+    provinceId: row.provinceId,
+    cityId: row.cityId,
+    districtId: row.districtId
+  }
+  drawerVisible.value = true
+}
+
+const submitEdit = async () => {
+  if (!editForm.value.id) return
+  saving.value = true
+  try {
+    await updateUser(editForm.value.id, editForm.value)
+    ElMessage.success('保存成功')
+    drawerVisible.value = false
+    loadData()
+  } finally {
+    saving.value = false
+  }
+}
 </script>
