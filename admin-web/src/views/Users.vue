@@ -4,8 +4,8 @@
       <div class="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
         <span class="text-lg font-bold text-gray-800">用户管理</span>
         <div class="flex items-center space-x-2">
-          <el-input placeholder="搜索昵称或ID" prefix-icon="Search" class="w-64 shadow-sm" clearable />
-          <el-button type="primary" icon="Search" class="shadow-sm">查询</el-button>
+          <el-input v-model="keyword" placeholder="搜索昵称或ID" prefix-icon="Search" class="w-64 shadow-sm" clearable @clear="handleSearch" @keyup.enter="handleSearch" />
+          <el-button type="primary" icon="Search" class="shadow-sm" @click="handleSearch">查询</el-button>
         </div>
       </div>
     </template>
@@ -34,7 +34,14 @@
     </el-table>
     
     <div class="mt-4 flex justify-end">
-      <el-pagination background layout="total, prev, pager, next" :total="2" />
+      <el-pagination 
+        background 
+        layout="total, prev, pager, next" 
+        :total="total" 
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        @current-change="handlePageChange"
+      />
     </div>
   </el-card>
 </template>
@@ -45,13 +52,35 @@ import { fetchUsers } from '@/api'
 
 const users = ref<any[]>([])
 const loading = ref(false)
+const keyword = ref('')
+const total = ref(0)
+const currentPage = ref(1)
+const pageSize = ref(10)
 
-onMounted(async () => {
+const loadData = async () => {
   loading.value = true
   try {
-    users.value = await fetchUsers()
+    const res: any = await fetchUsers(keyword.value, currentPage.value, pageSize.value)
+    users.value = res.content || []
+    total.value = res.totalElements || 0
+  } catch (error) {
+    console.error(error)
   } finally {
     loading.value = false
   }
+}
+
+const handleSearch = () => {
+  currentPage.value = 1
+  loadData()
+}
+
+const handlePageChange = (page: number) => {
+  currentPage.value = page
+  loadData()
+}
+
+onMounted(() => {
+  loadData()
 })
 </script>

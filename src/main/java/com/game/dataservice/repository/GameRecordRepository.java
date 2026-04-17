@@ -1,6 +1,8 @@
 package com.game.dataservice.repository;
 
 import com.game.dataservice.entity.GameRecord;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,6 +15,8 @@ import java.util.Map;
 @Repository
 public interface GameRecordRepository extends JpaRepository<GameRecord, Long> {
     List<GameRecord> findByGameIdAndUserId(Long gameId, String userId);
+
+    Page<GameRecord> findByUserId(String userId, Pageable pageable);
 
     /**
      * 容灾恢复：统计指定时间段内，各用户的通关总数

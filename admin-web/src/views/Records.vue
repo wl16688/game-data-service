@@ -4,14 +4,8 @@
       <div class="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
         <span class="text-lg font-bold text-gray-800">通关流水</span>
         <div class="flex items-center space-x-2">
-          <el-date-picker
-            type="daterange"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            class="shadow-sm"
-          />
-          <el-button type="primary" icon="Filter" class="shadow-sm">筛选</el-button>
+          <el-input v-model="userId" placeholder="按用户ID筛选" class="shadow-sm w-48" clearable @clear="handleSearch" @keyup.enter="handleSearch" />
+          <el-button type="primary" icon="Search" class="shadow-sm" @click="handleSearch">筛选</el-button>
         </div>
       </div>
     </template>
@@ -32,30 +26,83 @@
       </el-table-column>
       <el-table-column label="操作" width="100" align="center" fixed="right">
         <template #default="{ row }">
-          <el-button type="danger" link size="small" icon="Delete">作废</el-button>
+          <el-button type="danger" link size="small" icon="Delete" @click="handleDelete(row.id)">作废</el-button>
         </template>
       </el-table-column>
     </el-table>
     
     <div class="mt-4 flex justify-end">
-      <el-pagination background layout="total, sizes, prev, pager, next, jumper" :total="2" />
+      <el-pagination 
+        background 
+        layout="total, sizes, prev, pager, next, jumper" 
+        :total="total" 
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        @current-change="handlePageChange"
+        @size-change="handleSizeChange"
+      />
     </div>
   </el-card>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { fetchRecords } from '@/api'
+import { fetchRecords, deleteRecord } from '@/api'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const records = ref<any[]>([])
 const loading = ref(false)
+const userId = ref('')
+const total = ref(0)
+const currentPage = ref(1)
+const pageSize = ref(10)
 
-onMounted(async () => {
+const loadData = async () => {
   loading.value = true
   try {
-    records.value = await fetchRecords()
+    const res: any = await fetchRecords(userId.value, currentPage.value, pageSize.value)
+    records.value = res.content || []
+    total.value = res.totalElements || 0
+  } catch (error) {
+    console.error(error)
   } finally {
     loading.value = false
   }
+}
+
+const handleSearch = () => {
+  currentPage.value = 1
+  loadData()
+}
+
+const handlePageChange = (page: number) => {
+  currentPage.value = page
+  loadData()
+}
+
+const handleSizeChange = (size: number) => {
+  pageSize.value = size
+  currentPage.value = 1
+  loadData()
+}
+
+const handleDelete = (id: number) => {
+  ElMessageBox.confirm('确定要作废这条通关记录吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(async () => {
+    try {
+      await deleteRecord(id)
+      ElMessage.success('删除成功')
+      loadData()
+    } catch (e) {
+      console.error(e)
+    }
+  }).catch(() => {})
+}
+
+onMounted(() => {
+  loadData()
 })
 </script>

@@ -25,7 +25,14 @@
     </el-table>
     
     <div class="mt-4 flex justify-end">
-      <el-pagination background layout="prev, pager, next" :total="2" />
+      <el-pagination 
+        background 
+        layout="total, prev, pager, next" 
+        :total="total" 
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        @current-change="handlePageChange"
+      />
     </div>
   </el-card>
 </template>
@@ -36,13 +43,29 @@ import { fetchGames } from '@/api'
 
 const games = ref<any[]>([])
 const loading = ref(false)
+const total = ref(0)
+const currentPage = ref(1)
+const pageSize = ref(10)
 
-onMounted(async () => {
+const loadData = async () => {
   loading.value = true
   try {
-    games.value = await fetchGames()
+    const res: any = await fetchGames(currentPage.value, pageSize.value)
+    games.value = res.content || []
+    total.value = res.totalElements || 0
+  } catch (error) {
+    console.error(error)
   } finally {
     loading.value = false
   }
+}
+
+const handlePageChange = (page: number) => {
+  currentPage.value = page
+  loadData()
+}
+
+onMounted(() => {
+  loadData()
 })
 </script>

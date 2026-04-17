@@ -31,29 +31,60 @@ export const disasterRecovery = (gameId: number) => {
   })
 }
 
-// NOTE: Since the backend doesn't have standard CRUD endpoints for Games/Users/Records implemented yet (except those we just created for DataService), 
-// we will mock the CRUD list responses or point them to placeholders for now.
-
-export const fetchGames = () => {
-  // Placeholder
-  return Promise.resolve([
-    { id: 1, code: 'sheep_game', name: '羊了个羊', description: '休闲益智' },
-    { id: 2, code: 'tower_defense', name: '塔防大战', description: '策略防守' }
-  ])
+// 游戏接口
+export const fetchGames = (page: number = 1, size: number = 10) => {
+  return request({
+    url: '/admin/games',
+    method: 'get',
+    params: { page, size }
+  })
 }
 
-export const fetchUsers = () => {
-  // Placeholder
-  return Promise.resolve([
-    { id: 1, openid: 'oWxMock_001', nickname: '深圳玩家A', countryId: 1, provinceId: 440000 },
-    { id: 2, openid: 'oWxMock_002', nickname: '广州玩家B', countryId: 1, provinceId: 440000 }
-  ])
+export const createGame = (data: any) => {
+  return request({
+    url: '/admin/games',
+    method: 'post',
+    data
+  })
 }
 
-export const fetchRecords = () => {
-  // Placeholder
-  return Promise.resolve([
-    { id: 1, userId: '1', gameId: 1, levelId: 'level_1', timestamp: Date.now() },
-    { id: 2, userId: '2', gameId: 1, levelId: 'level_2', timestamp: Date.now() - 3600000 }
-  ])
+export const updateGame = (id: number, data: any) => {
+  return request({
+    url: `/admin/games/${id}`,
+    method: 'put',
+    data
+  })
+}
+
+// 用户接口
+export const fetchUsers = (keyword?: string, page: number = 1, size: number = 10) => {
+  return request({
+    url: '/admin/users',
+    method: 'get',
+    params: { keyword, page, size }
+  })
+}
+
+export const updateUser = (id: number, data: any) => {
+  return request({
+    url: `/admin/users/${id}`,
+    method: 'put',
+    data
+  })
+}
+
+// 记录接口
+export const fetchRecords = (userId?: string, page: number = 1, size: number = 10) => {
+  return request({
+    url: '/admin/records',
+    method: 'get',
+    params: { userId, page, size }
+  })
+}
+
+export const deleteRecord = (id: number) => {
+  return request({
+    url: `/admin/records/${id}`,
+    method: 'delete'
+  })
 }
